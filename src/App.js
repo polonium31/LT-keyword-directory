@@ -8,7 +8,8 @@ import { faCopy, faLink } from "@fortawesome/free-solid-svg-icons";
 import logo from "./images/logo.png";
 
 function App() {
-  const [data, setData] = useState([]);
+  const [searchData, setsearchData] = useState([]);
+  const [keywordData, setkeywordData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [articlesFound, setArticlesFound] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,7 +27,8 @@ function App() {
         const filteredData = rawData.filter(
           (row) => row["Keywords"] && row["URLs to Interlink"]
         );
-        setData(filteredData);
+        setsearchData(filteredData);
+        setkeywordData(filteredData);
       })
       .catch((error) => {
         console.error("Error fetching data: ", error);
@@ -34,13 +36,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const filteredArticles = data.filter((item) =>
+    const filteredArticles = searchData.filter((item) =>
       item["Keywords"]?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setArticlesFound(filteredArticles.length > 0);
-  }, [data, searchQuery]);
+  }, [searchData, searchQuery]);
 
-  const sortedBlogs = [...data].sort((a, b) =>
+  const sortedBlogs = [...keywordData].sort((a, b) =>
     a["Keywords"]?.toLowerCase() > b["Keywords"]?.toLowerCase() ? 1 : -1
   );
 
@@ -131,38 +133,46 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {currentBlogs.map((item, index) => (
-                <tr className="table-row" key={index}>
-                  <td style={{ width: "60%" }}>
-                    {item["Keywords"]
-                      ?.toLowerCase()
-                      .split(" ")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                      )
-                      .join(" ")}
-                  </td>
-                  <td className="other">
-                    <a
-                      href={item["URLs to Interlink"]}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="link"
-                    >
-                      <FontAwesomeIcon icon={faLink} /> Link
-                    </a>
-                  </td>
-                  <td className="other">
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => copyToClipboard(item["URLs to Interlink"])}
-                    >
-                      <FontAwesomeIcon icon={faCopy} id="icon" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {searchData
+                .filter((item) =>
+                  item["Keywords"]
+                    ?.toLowerCase()
+                    .includes(searchQuery?.toLowerCase())
+                )
+                .map((item, index) => (
+                  <tr className="table-row" key={index}>
+                    <td style={{ width: "60%" }}>
+                      {item["Keywords"]
+                        ?.toLowerCase()
+                        .split(" ")
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(" ")}
+                    </td>
+                    <td className="other">
+                      <a
+                        href={item["URLs to Interlink"]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="link"
+                      >
+                        <FontAwesomeIcon icon={faLink} /> Link
+                      </a>
+                    </td>
+                    <td className="other">
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() =>
+                          copyToClipboard(item["URLs to Interlink"])
+                        }
+                      >
+                        <FontAwesomeIcon icon={faCopy} id="icon" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         ) : (
@@ -179,7 +189,7 @@ function App() {
           onClick={toggleList}
           style={{ fontWeight: "bold", marginBottom: "2%" }}
         >
-          {showList ? "Hide List" : "Key Glossary"}
+          {showList ? "Hide List" : "Keyword Glossary"}
         </button>
       </div>
       {/* Conditionally render the list of blogs */}
