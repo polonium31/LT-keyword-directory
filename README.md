@@ -6,7 +6,7 @@ The Keyword-Targeted Article Directory is a web-based application designed to or
 
 ## Hosted Project link
 
-Open [LTkeyword Directory](https://ltkeyword.netlify.app/) to view it in your browser.
+Open [LTkeyword Directory](https://lt-keyword-directory.vercel.app/) to view it in your browser.
 
 ### Features
 
