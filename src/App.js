@@ -6,10 +6,9 @@ import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faLink } from "@fortawesome/free-solid-svg-icons";
 import logo from "./images/logo.png";
-
 function App() {
-  const [searchData, setsearchData] = useState([]);
-  const [keywordData, setkeywordData] = useState([]);
+  const [searchData, setSearchData] = useState([]);
+  const [keywordData, setKeywordData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [articlesFound, setArticlesFound] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,16 +18,17 @@ function App() {
   useEffect(() => {
     // Fetch data from the API
     axios
-      .get("https://sheet.best/api/sheets/02d58853-59b1-4a0c-a756-ced9d1481faa")
+      .get(
+        "https://script.google.com/macros/s/AKfycbxRZf6v42rbvQKsdztMMxQKnG8CREozrDhKfomR88GuRyXqxsm4uEwGZXVSmK_Tkg_G/exec"
+      )
       .then((response) => {
-        const rawData = response.data;
-
-        // Filter out rows with empty "Keywords" or "URLs to Interlink" fields
+        const rawData = response.data.data;
         const filteredData = rawData.filter(
           (row) => row["Keywords"] && row["URLs to Interlink"]
         );
-        setsearchData(filteredData);
-        setkeywordData(filteredData);
+
+        setSearchData(filteredData);
+        setKeywordData(filteredData);
       })
       .catch((error) => {
         console.error("Error fetching data: ", error);
