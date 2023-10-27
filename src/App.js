@@ -14,14 +14,13 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [showList, setShowList] = useState(false);
-
+  const [isLoading, setLoading] = useState(true);
   useEffect(() => {
-    // Fetch data from the API
-    axios
-      .get(
-        "https://script.google.com/macros/s/AKfycbxRZf6v42rbvQKsdztMMxQKnG8CREozrDhKfomR88GuRyXqxsm4uEwGZXVSmK_Tkg_G/exec"
-      )
-      .then((response) => {
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          "https://script.google.com/macros/s/AKfycbxRZf6v42rbvQKsdztMMxQKnG8CREozrDhKfomR88GuRyXqxsm4uEwGZXVSmK_Tkg_G/exec"
+        );
         const rawData = response.data.data;
         const filteredData = rawData.filter(
           (row) => row["Keywords"] && row["URLs to Interlink"]
@@ -29,10 +28,12 @@ function App() {
 
         setSearchData(filteredData);
         setKeywordData(filteredData);
-      })
-      .catch((error) => {
+        setLoading(false);
+      } catch (error) {
         console.error("Error fetching data: ", error);
-      });
+      }
+    }
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -133,13 +134,97 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {searchData
-                .filter((item) =>
-                  item["Keywords"]
-                    ?.toLowerCase()
-                    .includes(searchQuery?.toLowerCase())
-                )
-                .map((item, index) => (
+              {isLoading ? (
+                <div className="text-center mt-4">
+                  <div className="spinner-border text-info" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p>Loading data...</p>
+                </div>
+              ) : (
+                searchData
+                  .filter((item) =>
+                    item["Keywords"]
+                      ?.toLowerCase()
+                      .includes(searchQuery?.toLowerCase())
+                  )
+                  .map((item, index) => (
+                    <tr className="table-row" key={index}>
+                      <td style={{ width: "60%" }}>
+                        {item["Keywords"]
+                          ?.toLowerCase()
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
+                          .join(" ")}
+                      </td>
+                      <td className="other">
+                        <a
+                          href={item["URLs to Interlink"]}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link"
+                        >
+                          <FontAwesomeIcon icon={faLink} /> Link
+                        </a>
+                      </td>
+                      <td className="other">
+                        <button
+                          type="button"
+                          className="btn"
+                          onClick={() =>
+                            copyToClipboard(item["URLs to Interlink"])
+                          }
+                        >
+                          <FontAwesomeIcon icon={faCopy} id="icon" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+              )}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center mt-4">
+            <h4>No articles found for the search query.</h4>
+          </div>
+        )}
+      </div>
+      {/* Key Glossary button */}
+      <div className="text-center mt-4">
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          onClick={toggleList}
+          style={{ fontWeight: "bold", marginBottom: "2%" }}
+        >
+          {showList ? "Hide List" : "Keyword Glossary"}
+        </button>
+      </div>
+      {/* Conditionally render the list of blogs */}
+      {showList && (
+        <div className="container p-2">
+          {isLoading ? (
+            <div className="text-center mt-4">
+              <div className="spinner-border text-info" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p>Loading data...</p>
+            </div>
+          ) : (
+            // Render your section content
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Keyword</th>
+                  <th>Article Link</th>
+                  <th>Copy Link</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentBlogs.map((item, index) => (
                   <tr className="table-row" key={index}>
                     <td style={{ width: "60%" }}>
                       {item["Keywords"]
@@ -173,71 +258,9 @@ function App() {
                     </td>
                   </tr>
                 ))}
-            </tbody>
-          </table>
-        ) : (
-          <div className="text-center mt-4">
-            <h4>No articles found for the search query.</h4>
-          </div>
-        )}
-      </div>
-      {/* Key Glossary button */}
-      <div className="text-center mt-4">
-        <button
-          type="button"
-          className="btn btn-outline-primary"
-          onClick={toggleList}
-          style={{ fontWeight: "bold", marginBottom: "2%" }}
-        >
-          {showList ? "Hide List" : "Keyword Glossary"}
-        </button>
-      </div>
-      {/* Conditionally render the list of blogs */}
-      {showList && (
-        <div className="container p-2">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Keyword</th>
-                <th>Article Link</th>
-                <th>Copy Link</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentBlogs.map((item, index) => (
-                <tr className="table-row" key={index}>
-                  <td style={{ width: "60%" }}>
-                    {item["Keywords"]
-                      ?.toLowerCase()
-                      .split(" ")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                      )
-                      .join(" ")}
-                  </td>
-                  <td className="other">
-                    <a
-                      href={item["URLs to Interlink"]}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="link"
-                    >
-                      <FontAwesomeIcon icon={faLink} /> Link
-                    </a>
-                  </td>
-                  <td className="other">
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => copyToClipboard(item["URLs to Interlink"])}
-                    >
-                      <FontAwesomeIcon icon={faCopy} id="icon" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          )}
 
           {/* Pagination */}
           <nav>
